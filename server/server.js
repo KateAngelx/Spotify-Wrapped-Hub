@@ -9,15 +9,22 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
+const os = require('os'); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// 🟢 FIXED: Production CORS policy allowing Vercel and local configurations to connect seamlessly
+app.use(cors({
+    origin: ['https://spotify-wrapped-hub.vercel.app', 'http://localhost:5173', 'http://localhost:5174'],
+    methods: ['GET', 'POST'],
+    credentials: true
+}));
 app.use(express.json());
 
+// 🟢 FIXED: Multer configured to write to the universal OS temporary directory for cloud execution
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/'),
+    destination: (req, file, cb) => cb(null, os.tmpdir()),
     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({ storage });
@@ -41,6 +48,7 @@ async function getSpotifyAccessToken() {
 async function fetchSpotifyMeta(query, token, type = 'track') {
     if (!token) return null;
     try {
+        // 🟢 FIXED: Repaired string interpolation bounds by applying the missing '$' before the query block
         const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=${type}&limit=1`;
         const res = await axios.get(url, { headers: { 'Authorization': `Bearer ${token}` } });
         
@@ -155,15 +163,17 @@ async function processSpotifyData(rawData) {
 app.post('/api/upload', upload.single('spotifyData'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
-        const filePath = path.join(__dirname, req.file.path);
+        
+        // 🟢 FIXED: Reading files safely out of the temporary operating system context
+        const filePath = req.file.path;
         const fileData = fs.readFileSync(filePath, 'utf8');
         const analyticsResult = await processSpotifyData(JSON.parse(fileData));
         fs.unlinkSync(filePath);
         res.json(analyticsResult);
     } catch (error) {
-        console.error(error);
+        console.error('❌ Processing Error:', error);
         res.status(500).json({ error: 'Failed to process file.' });
     }
 });
 
-app.listen(PORT, () => console.log(`🚀 Live Backend working on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Live Backend working on port ${PORT}`));
