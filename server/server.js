@@ -1,5 +1,7 @@
-const SPOTIFY_CLIENT_ID = 'dadcee28e842435581c9c96c9d27dbea';
-const SPOTIFY_CLIENT_SECRET = '0c2180e431cc493c86d3dba8302c8465';
+require('dotenv').config(); // Load hidden keys from .env file
+
+const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 
 const express = require('express');
 const cors = require('cors');
@@ -9,7 +11,7 @@ const fs = require('fs');
 const axios = require('axios');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
