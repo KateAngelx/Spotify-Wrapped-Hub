@@ -15,7 +15,8 @@ export default function UploadScreen({ onUploadSuccess }) {
     formData.append('spotifyData', file);
 
     try {
-      const response = await fetch('http://localhost:5000/api/upload', {
+      // 🟢 UPDATED: Pointing directly to your production Render service pipeline
+      const response = await fetch('https://spotify-wrapped-hub.onrender.com/api/upload', {
         method: 'POST',
         body: formData,
       });
