@@ -41,7 +41,6 @@ async function getSpotifyAccessToken() {
 async function fetchSpotifyMeta(query, token, type = 'track') {
     if (!token) return null;
     try {
-        // 🟢 FIXED: Re-established structural Template Dollar String literal variable bounds
         const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=${type}&limit=1`;
         const res = await axios.get(url, { headers: { 'Authorization': `Bearer ${token}` } });
         
