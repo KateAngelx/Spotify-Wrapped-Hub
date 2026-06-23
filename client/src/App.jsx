@@ -65,14 +65,14 @@ function PlaylistPlanner({ rawTracks }) {
     <div style={plannerStyles.panel}>
       <div style={plannerStyles.bannerHeader}>
         <div style={plannerStyles.playlistCoverPlaceholder}>
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#535353" strokeWidth="2">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 18V5l12-2v13"/>
             <circle cx="6" cy="18" r="3"/>
             <circle cx="18" cy="16" r="3"/>
           </svg>
         </div>
         <div style={plannerStyles.bannerTextColumn}>
-          <span style={plannerStyles.badgeLabel}>SMART MIX ENGINE</span>
+          <span style={plannerStyles.badgeLabel}>PLAYLIST</span>
           <input 
             type="text" 
             value={playlistName} 
@@ -80,19 +80,22 @@ function PlaylistPlanner({ rawTracks }) {
             style={plannerStyles.titleInput} 
           />
           <p style={plannerStyles.bannerMeta}>
-            Generated audio profile split • <span style={{ color: '#fff' }}>{currentTracks.length} tracks cataloged</span>
+            Created from your metrics • <span style={{ color: '#fff' }}>{currentTracks.length} tracks</span>
           </p>
         </div>
       </div>
 
       <div style={plannerStyles.actionRow}>
         <button onClick={exportAsM3U} disabled={currentTracks.length === 0} style={plannerStyles.spotifyPlayBtn}>
-          Export Compilation
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          Export
         </button>
         
         <div style={plannerStyles.filterControls}>
           <select value={vibe} onChange={(e) => setVibe(e.target.value)} style={plannerStyles.spotifySelect}>
-            <option value="all">Comprehensive Logs</option>
+            <option value="all">All Logs</option>
             <option value="morning">Morning Acoustic</option>
             <option value="night">Midnight Sessions</option>
             <option value="heavy">Extended Plays</option>
@@ -107,8 +110,8 @@ function PlaylistPlanner({ rawTracks }) {
       </div>
 
       <div style={plannerStyles.tableHeaderGrid}>
-        <span style={{ width: '30px', textAlign: 'center' }}>#</span>
-        <span style={{ flexGrow: 1 }}>TITLE POOL</span>
+        <span style={{ width: '40px', textAlign: 'left', paddingLeft: '8px' }}>#</span>
+        <span style={{ flexGrow: 1 }}>TITLE</span>
       </div>
       <div style={plannerStyles.trackContainerStack}>
         {currentTracks.length > 0 ? (
@@ -122,7 +125,7 @@ function PlaylistPlanner({ rawTracks }) {
             </div>
           ))
         ) : (
-          <p style={plannerStyles.emptyMsgText}>No tracking points match the current filter parameters.</p>
+          <p style={plannerStyles.emptyMsgText}>No matching tracks found for this filter ruleset.</p>
         )}
       </div>
     </div>
@@ -132,6 +135,16 @@ function PlaylistPlanner({ rawTracks }) {
 export default function App() {
   const [wrappedData, setWrappedData] = useState(null);
   const [rawHistory, setRawHistory] = useState([]);
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Clear token parameters out of the address bar instantly for high security
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('code')) {
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, [wrappedData]);
 
   const handleUploadSuccess = (serverData, fileInput) => {
     setWrappedData(serverData);
@@ -155,79 +168,128 @@ export default function App() {
     }
   };
 
+  const handleResetSession = () => {
+    setWrappedData(null);
+    setRawHistory([]);
+    setShowSettings(false);
+  };
+
   return (
     <div style={styles.appWrapper}>
+      {/* Dynamic Header with Navigation & Settings System */}
       <header style={styles.topLogoNavbar}>
         <div style={styles.logoContainer}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="#1ED760">
+          {wrappedData && (
+            <button onClick={handleResetSession} style={styles.navBackBtn} title="Go Back">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+          )}
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#1ED760">
             <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.565.387-.86.207-2.377-1.454-5.37-1.783-8.893-.982-.336.075-.668-.135-.744-.47-.075-.336.135-.668.47-.743 3.856-.88 7.15-.51 9.822 1.13.296.178.387.563.206.858zm1.225-2.72c-.227.367-.707.487-1.074.26-2.72-1.672-6.87-2.157-10.082-1.182-.413.125-.847-.107-.972-.52-.125-.413.108-.847.52-.972 3.676-1.114 8.243-.573 11.35 1.34.367.226.487.706.258 1.074zm.105-2.833C14.432 8.81 8.51 8.613 5.093 9.65c-.524.157-1.076-.142-1.233-.666-.158-.523.142-1.075.666-1.233 3.923-1.19 10.46-.967 14.503 1.434.472.28.623.893.342 1.364-.28.472-.893.622-1.364.34z"/>
           </svg>
-          <span style={styles.brandTitleText}>
-            Spotify Wrapped Engine Clone
-          </span>
+          <span style={styles.brandTitleText}>Spotify Wrapped Hub</span>
+        </div>
+
+        <div style={styles.navActionCluster}>
+          <button onClick={() => setShowSettings(!showSettings)} style={{...styles.navUtilityBtn, color: showSettings ? '#1ED760' : '#b3b3b3'}} title="Settings">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
         </div>
       </header>
 
-      <main style={styles.mainWorkspaceLayout}>
-        {!wrappedData ? (
-          <UploadScreen onUploadSuccess={(data) => {
-            const fileInputElement = document.querySelector('input[type="file"]');
-            const fileInput = fileInputElement?.files?.[0] || null;
-            handleUploadSuccess(data, fileInput);
-          }} />
-        ) : (
-          <div style={styles.dashboardContainer}>
-            <div style={styles.slideColumn}>
-              <WrappedSlides data={wrappedData} />
-            </div>
-            <div style={styles.plannerColumn}>
-              <PlaylistPlanner rawTracks={rawHistory} />
-            </div>
-          </div>
-        )}
-      </main>
+      {showSettings && (
+        <div style={styles.settingsOverlayPanel}>
+          <h3 style={styles.settingsPanelTitle}>Privacy & System Configuration</h3>
+          <p style={styles.settingsPanelDesc}>Your streaming datasets are isolated temporarily within volatile local session variables. Memory states clean out automatically upon application disconnect rules.</p>
+          <button onClick={handleResetSession} style={styles.clearDataBtn}>
+            Disconnect Profile Session
+          </button>
+        </div>
+      )}
 
-      <footer style={styles.spotifyFooterSection}>
-        <p>2026 Spotify Wrapped Engine Clone • Designed for personal analytics data evaluation protocols.</p>
-        <p style={{ color: '#333', marginTop: '6px', fontSize: '0.68rem', lineHeight: '1.4' }}>
-          This interface uses standard web APIs and metadata mocks. All logos, branding assets, and trademarks belong entirely to Spotify AB.
-        </p>
-      </footer>
+      {/* 📱 MOBILE CONTENT VIEWPORT SCROLL WRAPPER */}
+      <div style={styles.scrollableContentWrapper}>
+        <main style={styles.mainWorkspaceLayout}>
+          {!wrappedData ? (
+            <UploadScreen onUploadSuccess={(data) => {
+              const fileInputElement = document.querySelector('input[type="file"]');
+              const fileInput = fileInputElement?.files?.[0] || null;
+              handleUploadSuccess(data, fileInput);
+            }} />
+          ) : (
+            <div style={styles.dashboardContainer}>
+              <div style={styles.slideColumn}>
+                <WrappedSlides data={wrappedData} />
+              </div>
+              <div style={styles.plannerColumn}>
+                <PlaylistPlanner rawTracks={rawHistory} />
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* Corporate Anchored Footer System */}
+        <footer style={styles.spotifyFooterSection}>
+          <p style={styles.footerPrimaryText}>2026 Spotify Wrapped Hub • Designed for secure metrics aggregation protocols.</p>
+          <p style={styles.footerSecondaryText}>
+            This interface uses temporary memory states. All interface layouts, typography styles, trademarks, and design branding belong entirely to Spotify AB.
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }
 
 const styles = {
-  appWrapper: { display: 'flex', flexDirection: 'column', width: '100vw', minHeight: '100vh', background: '#000', color: '#fff', boxSizing: 'border-box' },
-  topLogoNavbar: { display: 'flex', alignItems: 'center', height: '65px', width: '100%', background: '#000', padding: '0 32px', borderBottom: '1px solid #121212', boxSizing: 'border-box' },
-  logoContainer: { display: 'flex', alignItems: 'center', gap: '14px' },
-  brandTitleText: { fontSize: '1rem', fontWeight: '400', letterSpacing: '0.5px', color: '#b3b3b3', borderLeft: '1px solid #222', paddingLeft: '14px' },
-  mainWorkspaceLayout: { display: 'flex', flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: '40px 20px', boxSizing: 'border-box', background: 'linear-gradient(180deg, #0c0c0c 0%, #000000 100%)' },
-  dashboardContainer: { display: 'flex', flexDirection: 'row', gap: '40px', width: '100%', maxWidth: '980px', justifyContent: 'center', alignItems: 'flex-start', flexWrap: 'wrap' },
-  slideColumn: { flex: '1', maxWidth: '385px', minWidth: '320px' },
-  plannerColumn: { flex: '1', maxWidth: '480px', minWidth: '320px' },
-  spotifyFooterSection: { textAlign: 'center', padding: '24px 20px', background: '#000', color: '#555', fontSize: '0.72rem', borderTop: '1px solid #121212' }
+  appWrapper: { display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', background: '#000', color: '#fff', boxSizing: 'border-box', fontFamily: 'Circular Sp, Circular, -apple-system, BlinkMacSystemFont, Roboto, Helvetica Neue, Arial, sans-serif', overflow: 'hidden' },
+  topLogoNavbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px', width: '100%', background: '#000', padding: '0 16px', boxSizing: 'border-box', position: 'relative', zIndex: 30 },
+  logoContainer: { display: 'flex', alignItems: 'center', gap: '8px' },
+  navBackBtn: { background: 'transparent', border: 'none', color: '#b3b3b3', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px', transition: 'color 0.2s' },
+  brandTitleText: { fontSize: '0.88rem', fontWeight: '700', letterSpacing: '-0.1px', color: '#fff' },
+  navActionCluster: { display: 'flex', alignItems: 'center' },
+  navUtilityBtn: { background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px', transition: 'color 0.2s' },
+  settingsOverlayPanel: { background: '#121212', borderBottom: '1px solid #282828', padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px', position: 'relative', zIndex: 25 },
+  settingsPanelTitle: { margin: 0, fontSize: '0.88rem', fontWeight: '700', color: '#fff' },
+  settingsPanelDesc: { margin: 0, fontSize: '0.78rem', color: '#b3b3b3', lineHeight: '1.4', maxWidth: '500px' },
+  clearDataBtn: { background: '#fff', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer', marginTop: '6px', alignSelf: 'flex-start', transition: 'transform 0.1s ease' },
+  
+  // 📱 Fixed touch physics configurations
+  scrollableContentWrapper: { display: 'flex', flexDirection: 'column', flexGrow: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' },
+  mainWorkspaceLayout: { display: 'flex', flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: '16px', boxSizing: 'border-box', background: 'linear-gradient(180deg, #121212 0%, #000000 100%)' },
+  dashboardContainer: { display: 'flex', flexDirection: 'row', gap: '24px', width: '100%', maxWidth: '950px', justifyContent: 'center', alignItems: 'flex-start', flexWrap: 'wrap' },
+  slideColumn: { flex: '1', maxWidth: '385px', minWidth: '280px', width: '100%' },
+  plannerColumn: { flex: '1', maxWidth: '480px', minWidth: '280px', width: '100%' },
+  
+  spotifyFooterSection: { textAlign: 'center', padding: '32px 16px', background: '#000', borderTop: '1px solid #121212', boxSizing: 'border-box' },
+  footerPrimaryText: { margin: 0, color: '#b3b3b3', fontSize: '0.75rem', fontWeight: '400' },
+  footerSecondaryText: { margin: '8px 0 0 0', color: '#535353', fontSize: '0.65rem', lineHeight: '1.4' }
 };
 
 const plannerStyles = {
-  panel: { background: '#121212', borderRadius: '16px', padding: '24px', width: '100%', boxSizing: 'border-box', border: '1px solid #1f1f1f' },
-  bannerHeader: { display: 'flex', gap: '20px', alignItems: 'flex-end', marginBottom: '24px', background: 'linear-gradient(180deg, #1c1c1c 0%, #121212 100%)', padding: '20px', borderRadius: '12px' },
-  playlistCoverPlaceholder: { width: '110px', height: '110px', background: '#242424', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' },
-  bannerTextColumn: { display: 'flex', flexDirection: 'column', flexGrow: 1 },
-  badgeLabel: { fontSize: '0.62rem', fontWeight: '800', letterSpacing: '1.5px', color: '#b3b3b3', marginBottom: '6px' },
-  titleInput: { background: 'transparent', border: 'none', color: '#fff', fontSize: '1.8rem', fontWeight: '900', outline: 'none', padding: '0', width: '100%', borderBottom: '1px solid transparent' },
-  bannerMeta: { color: '#a7a7a7', fontSize: '0.8rem', marginTop: '8px', fontWeight: '500' },
-  actionRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '15px', flexWrap: 'wrap' },
-  spotifyPlayBtn: { background: '#1ED760', color: '#000', border: 'none', padding: '12px 24px', borderRadius: '40px', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', letterSpacing: '0.5px' },
-  filterControls: { display: 'flex', gap: '10px' },
-  spotifySelect: { background: '#1a1a1a', border: '1px solid #333', color: '#fff', padding: '10px 14px', borderRadius: '24px', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer', outline: 'none' },
-  spotifySelectCompact: { background: '#1a1a1a', border: '1px solid #333', color: '#fff', padding: '10px 12px', borderRadius: '24px', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer', outline: 'none' },
-  tableHeaderGrid: { display: 'flex', padding: '0 16px 12px 16px', borderBottom: '1px solid #1f1f1f', color: '#a7a7a7', fontSize: '0.68rem', fontWeight: '700', letterSpacing: '1px' },
-  trackContainerStack: { display: 'flex', flexDirection: 'column', height: '240px', overflowY: 'auto', marginTop: '8px' },
-  trackRowItem: { display: 'flex', alignItems: 'center', padding: '10px 16px', borderRadius: '8px', transition: 'background 0.2s' },
-  rowNumber: { width: '30px', textAlign: 'center', color: '#a7a7a7', fontSize: '0.85rem', fontWeight: '600' },
-  rowMetaDetails: { display: 'flex', flexDirection: 'column' },
-  trackTitleText: { color: '#fff', fontSize: '0.9rem', fontWeight: '600', margin: 0 },
-  trackArtistText: { color: '#a7a7a7', fontSize: '0.8rem', margin: 0, marginTop: '3px' },
-  emptyMsgText: { color: '#555', fontSize: '0.8rem', padding: '60px 40px', textAlign: 'center', fontWeight: '500' }
+  panel: { background: '#121212', borderRadius: '8px', padding: '16px', width: '100%', boxSizing: 'border-box' },
+  bannerHeader: { display: 'flex', gap: '16px', alignItems: 'flex-end', marginBottom: '16px', paddingBottom: '8px' },
+  playlistCoverPlaceholder: { width: '80px', height: '80px', background: '#282828', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' },
+  bannerTextColumn: { display: 'flex', flexDirection: 'column', flexGrow: 1, overflow: 'hidden' },
+  badgeLabel: { fontSize: '0.65rem', fontWeight: '700', letterSpacing: '0.8px', color: '#fff', marginBottom: '4px' },
+  titleInput: { background: 'transparent', border: 'none', color: '#fff', fontSize: '1.75rem', fontWeight: '700', letterSpacing: '-0.5px', outline: 'none', padding: '0', width: '100%', textOverflow: 'ellipsis', fontFamily: 'inherit' },
+  bannerMeta: { color: '#b3b3b3', fontSize: '0.78rem', marginTop: '4px', fontWeight: '400' },
+  actionRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px', flexWrap: 'wrap' },
+  spotifyPlayBtn: { display: 'inline-flex', alignItems: 'center', background: '#1ED760', color: '#000', border: 'none', padding: '8px 24px', borderRadius: '20px', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', transition: 'transform 0.1s ease', fontFamily: 'inherit' },
+  filterControls: { display: 'flex', gap: '8px' },
+  spotifySelect: { background: '#282828', border: 'none', color: '#fff', padding: '8px 12px', borderRadius: '4px', fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer', outline: 'none', fontFamily: 'inherit' },
+  spotifySelectCompact: { background: '#282828', border: 'none', color: '#fff', padding: '8px 10px', borderRadius: '4px', fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer', outline: 'none', fontFamily: 'inherit' },
+  tableHeaderGrid: { display: 'flex', padding: '0 12px 8px 12px', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#b3b3b3', fontSize: '0.7rem', fontWeight: '700', letterSpacing: '0.5px' },
+  trackContainerStack: { display: 'flex', flexDirection: 'column', height: '240px', overflowY: 'auto', marginTop: '4px' },
+  trackRowItem: { display: 'flex', alignItems: 'center', padding: '8px 12px', borderRadius: '4px', transition: 'background-color 0.2s' },
+  rowNumber: { width: '40px', textAlign: 'left', color: '#b3b3b3', fontSize: '0.85rem', paddingLeft: '8px' },
+  rowMetaDetails: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  trackTitleText: { color: '#fff', fontSize: '0.88rem', fontWeight: '400', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  trackArtistText: { color: '#b3b3b3', fontSize: '0.78rem', margin: 0, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  emptyMsgText: { color: '#b3b3b3', fontSize: '0.78rem', padding: '48px 16px', textAlign: 'center' }
 };
