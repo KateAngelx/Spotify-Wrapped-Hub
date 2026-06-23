@@ -136,7 +136,6 @@ export default function App() {
   const handleUploadSuccess = (serverData, fileInput) => {
     setWrappedData(serverData);
     
-    // Fallback pipeline: Parse files if available; otherwise use server arrays for demo logs
     if (fileInput) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -190,7 +189,7 @@ export default function App() {
 
       <footer style={styles.spotifyFooterSection}>
         <p>2026 Spotify Wrapped Engine Clone • Designed for personal analytics data evaluation protocols.</p>
-        <p style={{ color: '#333', marginTop: '6px', fontSize: '0.68rem', lineSpacing: '1.4' }}>
+        <p style={{ color: '#333', marginTop: '6px', fontSize: '0.68rem', lineHeight: '1.4' }}>
           This interface uses standard web APIs and metadata mocks. All logos, branding assets, and trademarks belong entirely to Spotify AB.
         </p>
       </footer>
